@@ -9,6 +9,6 @@ module.exports = merge(common, {
     contentBase: path.join(__dirname, 'src'),
     port: 8080,
     host: '0.0.0.0',
-    hot: true
-  }
+    hot: true,
+  },
 })
