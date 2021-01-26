@@ -12,6 +12,7 @@
     "dev": "cross-env NODE_ENV=development webpack-dev-server --config webpack.dev.js",
     "clean": "rimraf dist",
     "lint": "eslint ./",
+    "test:ui": "cypress open",
     "prepare": "install-peers",
     "build": "cross-env NODE_ENV=production webpack --config webpack.prod.js"
   },
@@ -24,6 +25,7 @@
     "pixi.js": "^5.2.1"
   },
   "devDependencies": {
+    "cypress": "^6.3.0",
     "@babel/core": "^7.8.4",
     "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/preset-env": "^7.8.4",
