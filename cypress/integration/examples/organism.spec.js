@@ -33,18 +33,22 @@ context('Actions', () => {
     expect(org.step).to.equal(0, 'starts at 0');
 
     org.move()
+    expect(org.previousPosition).to.deep.equal({ x: 2, y: 2, })
     expect(org.nextPosition).to.deep.equal({ x: 2, y: 3, })
     expect(org.step).to.equal(1);
 
     org.move()
-    expect(org.step).to.equal(2);
+    expect(org.previousPosition).to.deep.equal({ x: 2, y: 3, })
     expect(org.nextPosition).to.deep.equal({ x: 3, y: 3, })
+    expect(org.step).to.equal(2);
 
     org.move()
-    expect(org.step).to.equal(3);
+    expect(org.previousPosition).to.deep.equal({ x: 3, y: 3, })
     expect(org.nextPosition).to.deep.equal({ x: 3, y: 2, })
+    expect(org.step).to.equal(3);
 
     org.move()
+    expect(org.previousPosition).to.deep.equal({ x: 3, y: 2, })
     expect(org.step).to.equal(0, 'goes back to the beginning');
     expect(org.nextPosition).to.deep.equal({ x: 2, y: 2, })
   })

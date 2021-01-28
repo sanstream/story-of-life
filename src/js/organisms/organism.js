@@ -70,7 +70,6 @@ export default class Organism {
 
   move () {
     if (this.lifespan && this.movementStyle.length) {
-      
       this.previousPosition = new GridPosition({
         ...this.nextPosition,
       })

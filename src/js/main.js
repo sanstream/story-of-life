@@ -69,8 +69,8 @@ for (const org of autotrophes) {
   org.spriteRef.beginFill(colourRange.autotrophe)
   org.spriteRef.drawCircle(0, 0, 0.5 * baseSize)
   org.spriteRef.endFill()
-  org.spriteRef.x = org.currentPosition.x * baseSize
-  org.spriteRef.y = org.currentPosition.y * baseSize
+  org.spriteRef.x = org.nextPosition.x * baseSize
+  org.spriteRef.y = org.nextPosition.y * baseSize
   app.stage.addChild(org.spriteRef)
 }
 
@@ -95,9 +95,11 @@ app.ticker.add(() => {
 
   for (const org of autotrophes) {
     if (ticksTracker === 0) {
-      org.move(grid)
+      org.move()
     }
-    org.spriteRef.x = (org.currentPosition.x + ((org.nextPosition.x - org.currentPosition.x) * ticksDiff)) * baseSize
-    org.spriteRef.y = (org.currentPosition.y + ((org.nextPosition.y - org.currentPosition.y) * ticksDiff)) * baseSize
+    if (org.previousPosition) {
+      org.spriteRef.x = (org.previousPosition.x + ((org.nextPosition.x - org.previousPosition.x) * ticksDiff)) * baseSize
+      org.spriteRef.y = (org.previousPosition.y + ((org.nextPosition.y - org.previousPosition.y) * ticksDiff)) * baseSize
+    }
   }
 })
