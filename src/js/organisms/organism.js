@@ -8,37 +8,6 @@ export const Direction = {
   left: 3,
 }
 
-function applyPosition (direction, position, grid) {
-  const maxY = grid.height - 1
-  const maxX = grid.width - 1
-  // debugger
-  if (direction === Direction.up) {
-    if (position.y === 0) {
-      position.y += 1
-    } else {
-      position.y -= 1
-    }
-  } else if (direction === Direction.right) {
-    if (position.x === maxX) {
-      position.x -= 1
-    } else {
-      position.x += 1
-    }
-  } else if (direction === Direction.down) {
-    if (position.y === maxY) {
-      position.y -= 1
-    } else {
-      position.y += 1
-    }
-  } else if (direction === Direction.left) {
-    if (position.x === 0) {
-      position.x += 1
-    } else {
-      position.x -= 1
-    }
-  }
-}
-
 export default class Organism {
   /**
    *
@@ -74,7 +43,7 @@ export default class Organism {
         ...this.nextPosition,
       })
       // console.log(this.movementStyle[this.nextNextStep])
-      applyPosition(this.movementStyle[this.step], this.nextPosition, this.grid)
+      this.applyPosition(this.movementStyle[this.step], this.nextPosition, this.grid)
       this.lifespan -= 1
       this.moving = false
 
@@ -84,6 +53,55 @@ export default class Organism {
         this.step += 1
       }
     }
+  }
+
+  applyPosition (direction, position, grid) {
+    const maxY = grid.height
+    const maxX = grid.width
+    const bounceOFf = 2
+    let changeDirection = false
+    // debugger
+    if (direction === Direction.up) {
+      if (position.y === 0) {
+        position.y += bounceOFf
+        changeDirection = true
+      } else {
+        position.y -= 1
+      }
+    } else if (direction === Direction.right) {
+      if (position.x === maxX) {
+        position.x -= bounceOFf
+        changeDirection = true
+      } else {
+        position.x += 1
+      }
+    } else if (direction === Direction.down) {
+      if (position.y === maxY) {
+        position.y -= bounceOFf
+        changeDirection = true
+      } else {
+        position.y += 1
+      }
+    } else if (direction === Direction.left) {
+      if (position.x === 0) {
+        position.x += bounceOFf
+        changeDirection = true
+      } else {
+        position.x -= 1
+      }
+    }
+    if (changeDirection) {
+      this.__flipMovementStyle()
+    }
+  }
+
+  __flipMovementStyle () {
+    this.movementStyle = this.movementStyle.map(dir => {
+      if (dir === Direction.left) return Direction.right
+      if (dir === Direction.right) return Direction.left
+      if (dir === Direction.down) return Direction.up
+      if (dir === Direction.up) return Direction.down
+    }).reverse()
   }
 
   /**

@@ -4,8 +4,8 @@ import GridPosition from './gridPosition'
 import Autotrophe, { Direction } from './organisms/organism'
 
 const grid = {
-  width: 10,
-  height: 10,
+  width: 200,
+  height: 200,
 }
 
 const colourRange = {
@@ -23,19 +23,20 @@ const orgWidth = baseSize
 const organismTexture = null
 const ticksInSingleStep = 100 // frames per second
 
-const autotrophes = new Array(2).fill(0).map((i, index) => {
+const autotrophes = new Array(300).fill(0).map((i, index) => {
   const org = new Autotrophe({
     id: `autotrophe-${index}`,
     initPosition: new GridPosition({
-      x: 2, y: 2,
-      // x: Math.round(Random.rangeFloor(grid.width / 2, grid.width)),
-      // y: Math.round(Random.rangeFloor(grid.height / 2, grid.height))
+      // x: 2, y: 2,
+      x: Math.round(Random.rangeFloor(0, grid.width)),
+      y: Math.round(Random.rangeFloor(0, grid.height))
     }),
     grid,
-    movementStyle: [Direction.right, Direction.down, Direction.left, Direction.up,],
-    // new Array(Random.rangeFloor(4, 6))
-    //   .fill(0)
-    //   .map(() => Random.rangeFloor(0, 3))
+    movementStyle: 
+    // [ Direction.down, Direction.left, Direction.left,],
+    new Array(Random.rangeFloor(4, 6))
+      .fill(0)
+      .map(() => Random.rangeFloor(0, 3))
   })
   return org
 })
@@ -51,17 +52,17 @@ const app = new PIXI.Application({
   resolution: window.devicePixelRatio || 1,
 })
 
-for (let h = 1; h < grid.height; h++) {
-  for (let w = 1; w < grid.width; w++) {
-    const dot = new PIXI.Graphics()
-    dot.beginFill(colourRange.lightBg)
-    dot.drawCircle(0, 0, 2)
-    dot.endFill()
-    dot.x = w * baseSize
-    dot.y = h * baseSize
-    app.stage.addChild(dot)
-  }
-}
+// for (let h = 1; h < grid.height; h++) {
+//   for (let w = 1; w < grid.width; w++) {
+//     const dot = new PIXI.Graphics()
+//     dot.beginFill(colourRange.lightBg)
+//     dot.drawCircle(0, 0, 2)
+//     dot.endFill()
+//     dot.x = w * baseSize
+//     dot.y = h * baseSize
+//     app.stage.addChild(dot)
+//   }
+// }
 
 // organismTexture = PIXI.Texture.from('assets/bulb.svg')
 for (const org of autotrophes) {
