@@ -13,31 +13,40 @@ const showGrid = false
 const colourRange = {
   bgMonotone: 0x121212, // dark grey
   bg: 0x2C575D, // dark cyan
-  lightBg: 0x57BEB3, // grey cyan
-  carnivore: 0xF4EED6, // warm white
+  lightBg: 0xF4EED6, // grey cyan
+  carnivore: 0xEA5150, // warm white
   herbivore: 0xEC8F7A, // soft pink
-  autotrophe: 0xEA5150, // soft red
+  autotrophe: 0x57BEB3, // soft red
 }
 
 const baseSize = 30
 const ticksInSingleStep = 100 // frames per second
 
-const autotrophes = new Array(300).fill(0).map((i, index) => {
-  const org = new Autotrophe({
-    id: `autotrophe-${index}`,
-    initPosition: new GridPosition({
-      // x: 2, y: 2,
-      x: Math.round(Random.rangeFloor(0, grid.width)),
-      y: Math.round(Random.rangeFloor(0, grid.height)),
-    }),
-    grid,
-    colour: colourRange.autotrophe,
-    movementStyle:
-      new Array(Random.rangeFloor(4, 6))
-        .fill(0)
-        .map(() => Random.rangeFloor(0, 3)),
+const organismTypes = [
+  'carnivore',
+  'herbivore',
+  'autotrophe',
+]
+
+const organisms = {}
+
+organismTypes.forEach(type => {
+  organisms[type] = new Array(200).fill(0).map((i, index) => {
+    const org = new Autotrophe({
+      id: `autotrophe-${index}`,
+      initPosition: new GridPosition({
+        x: Math.round(Random.rangeFloor(0, grid.width)),
+        y: Math.round(Random.rangeFloor(0, grid.height)),
+      }),
+      grid,
+      colour: colourRange[type],
+      movementStyle:
+        new Array(Random.rangeFloor(4, 6))
+          .fill(0)
+          .map(() => Random.rangeFloor(0, 3)),
+    })
+    return org
   })
-  return org
 })
 
 PIXI.autoDetectRenderer({ antialias: true, })
@@ -65,14 +74,17 @@ if (showGrid) {
   }
 }
 
-for (const org of autotrophes) {
-  org.spriteRef = new PIXI.Graphics()
-  org.spriteRef.beginFill(org.colour)
-  org.spriteRef.drawCircle(0, 0, 0.5 * baseSize)
-  org.spriteRef.endFill()
-  org.spriteRef.x = org.nextPosition.x * baseSize
-  org.spriteRef.y = org.nextPosition.y * baseSize
-  app.stage.addChild(org.spriteRef)
+for (const type in organisms) {
+  console.log(organisms[type])
+  for (const org of organisms[type]) {
+    org.spriteRef = new PIXI.Graphics()
+    org.spriteRef.beginFill(org.colour)
+    org.spriteRef.drawCircle(0, 0, 0.5 * baseSize)
+    org.spriteRef.endFill()
+    org.spriteRef.x = org.nextPosition.x * baseSize
+    org.spriteRef.y = org.nextPosition.y * baseSize
+    app.stage.addChild(org.spriteRef)
+  }
 }
 
 app.ticker.minFPS = ticksInSingleStep
@@ -93,13 +105,16 @@ app.ticker.add(() => {
 
   const ticksDiff = ticksTracker / ticksInSingleStep
 
-  for (const org of autotrophes) {
-    if (ticksTracker === 0) {
-      org.move()
-    }
-    if (org.previousPosition) {
-      org.spriteRef.x = (org.previousPosition.x + ((org.nextPosition.x - org.previousPosition.x) * ticksDiff)) * baseSize
-      org.spriteRef.y = (org.previousPosition.y + ((org.nextPosition.y - org.previousPosition.y) * ticksDiff)) * baseSize
+  for (const type in organisms) {
+    for (const org of organisms[type]) {
+      // for (const org of autotrophes) {
+      if (ticksTracker === 0) {
+        org.move()
+      }
+      if (org.previousPosition) {
+        org.spriteRef.x = (org.previousPosition.x + ((org.nextPosition.x - org.previousPosition.x) * ticksDiff)) * baseSize
+        org.spriteRef.y = (org.previousPosition.y + ((org.nextPosition.y - org.previousPosition.y) * ticksDiff)) * baseSize
+      }
     }
   }
 })
