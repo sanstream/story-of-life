@@ -46,7 +46,6 @@ export default class Organism {
         ...this.nextPosition,
       })
       this.applyPosition(this.movementStyle[this.step], this.nextPosition, this.grid)
-      this.lifespan -= 1
       this.moving = false
 
       if (this.movementStyle.length - 1 === this.step) {
@@ -55,6 +54,7 @@ export default class Organism {
         this.step += 1
       }
     }
+    this.lifespan -= 1
   }
 
   applyPosition (direction, position, grid) {

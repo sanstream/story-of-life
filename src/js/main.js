@@ -3,9 +3,10 @@ import Random from 'canvas-sketch-util/random'
 import GridPosition from './gridPosition'
 import Autotrophe from './organisms/organism'
 
+const nStartingOrganisms = 20000
 const grid = {
-  width: 200,
-  height: 200,
+  width: Math.round(Math.sqrt(nStartingOrganisms) * 0.9),
+  height: Math.round(Math.sqrt(nStartingOrganisms) * 0.9),
 }
 
 const showGrid = false
@@ -14,40 +15,58 @@ const colourRange = {
   bgMonotone: 0x121212, // dark grey
   bg: 0x2C575D, // dark cyan
   lightBg: 0xF4EED6, // grey cyan
-  carnivore: 0xEA5150, // warm white
-  herbivore: 0xEC8F7A, // soft pink
-  autotrophe: 0x57BEB3, // soft red
+  carnivore: 0xCC3333, // soft red
+  herbivore: 0xCC9933, // murky yellow
+  autotrophe: 0x006666, // soft green
+}
+
+function randomMovements (minLength, maxLength) {
+  const movements = new Array(Random.rangeFloor(minLength, maxLength)).fill(0)
+  return movements.map(() => Random.rangeFloor(0, 3))
 }
 
 const baseSize = 30
-const ticksInSingleStep = 100 // frames per second
+const ticksInSingleStep = 50 // frames per second
 
-const organismTypes = [
-  'carnivore',
-  'herbivore',
-  'autotrophe',
-]
+const predefinedMovements = new Array(Math.round(nStartingOrganisms / 2))
+  .fill(0).map(() => randomMovements(4, 8))
 
 const organisms = {}
+const ordering = [
+  'autotrophe',
+  'herbivore',
+  'carnivore',
+]
 
-organismTypes.forEach(type => {
-  organisms[type] = new Array(200).fill(0).map((i, index) => {
-    const org = new Autotrophe({
-      id: `autotrophe-${index}`,
-      initPosition: new GridPosition({
-        x: Math.round(Random.rangeFloor(0, grid.width)),
-        y: Math.round(Random.rangeFloor(0, grid.height)),
-      }),
-      grid,
-      colour: colourRange[type],
-      movementStyle:
-        new Array(Random.rangeFloor(4, 6))
-          .fill(0)
-          .map(() => Random.rangeFloor(0, 3)),
+const organismTypes = {
+  carnivore: {
+    count: Math.round(nStartingOrganisms * 0.01),
+  },
+  herbivore: {
+    count: Math.round(nStartingOrganisms * 0.1),
+  },
+  autotrophe: {
+    count: Math.round(nStartingOrganisms * 0.89),
+  },
+}
+
+for (const type of ordering) {
+  organisms[type] = new Array(organismTypes[type].count)
+    .fill(0)
+    .map((i, index) => {
+      const org = new Autotrophe({
+        id: `autotrophe-${index}`,
+        initPosition: new GridPosition({
+          x: Math.round(Random.rangeFloor(0, grid.width)),
+          y: Math.round(Random.rangeFloor(0, grid.height)),
+        }),
+        grid,
+        colour: colourRange[type],
+        movementStyle: type === 'autotrophe' ? [] : predefinedMovements[Random.rangeFloor(0, predefinedMovements.length - 1)],
+      })
+      return org
     })
-    return org
-  })
-})
+}
 
 PIXI.autoDetectRenderer({ antialias: true, })
 
@@ -75,11 +94,10 @@ if (showGrid) {
 }
 
 for (const type in organisms) {
-  console.log(organisms[type])
   for (const org of organisms[type]) {
     org.spriteRef = new PIXI.Graphics()
     org.spriteRef.beginFill(org.colour)
-    org.spriteRef.drawCircle(0, 0, 0.5 * baseSize)
+    org.spriteRef.drawCircle(0, 0, 0.3 * baseSize)
     org.spriteRef.endFill()
     org.spriteRef.x = org.nextPosition.x * baseSize
     org.spriteRef.y = org.nextPosition.y * baseSize
