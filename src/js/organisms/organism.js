@@ -13,10 +13,11 @@ export default class Organism {
    *
    * @param {GridPosition} initPosition
    */
-  constructor ({ initPosition, grid, movementStyle, id, }) {
+  constructor ({ initPosition, grid, movementStyle, id, colour, }) {
     this.id = id
     this.hash = 'organism'
     this.grid = grid
+    this.colour = colour
     // in iterations:
     this.lifespan = 10000
     /**
@@ -31,7 +32,9 @@ export default class Organism {
      * in the form of GridPosition's
      * serves as a type of memory:
      */
-    this.routeTravelled = [initPosition, ]
+    this.routeTravelled = [
+      initPosition,
+    ]
     this.movementStyle = movementStyle
     this.nextPosition = initPosition
     this.moving = false
@@ -42,7 +45,6 @@ export default class Organism {
       this.previousPosition = new GridPosition({
         ...this.nextPosition,
       })
-      // console.log(this.movementStyle[this.nextNextStep])
       this.applyPosition(this.movementStyle[this.step], this.nextPosition, this.grid)
       this.lifespan -= 1
       this.moving = false
@@ -60,7 +62,7 @@ export default class Organism {
     const maxX = grid.width
     const bounceOFf = 2
     let changeDirection = false
-    // debugger
+
     if (direction === Direction.up) {
       if (position.y === 0) {
         position.y += bounceOFf

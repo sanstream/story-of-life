@@ -1,12 +1,14 @@
 import * as PIXI from 'pixi.js'
 import Random from 'canvas-sketch-util/random'
 import GridPosition from './gridPosition'
-import Autotrophe, { Direction } from './organisms/organism'
+import Autotrophe from './organisms/organism'
 
 const grid = {
   width: 200,
   height: 200,
 }
+
+const showGrid = false
 
 const colourRange = {
   bgMonotone: 0x121212, // dark grey
@@ -17,10 +19,7 @@ const colourRange = {
   autotrophe: 0xEA5150, // soft red
 }
 
-const interval = 200
 const baseSize = 30
-const orgWidth = baseSize
-const organismTexture = null
 const ticksInSingleStep = 100 // frames per second
 
 const autotrophes = new Array(300).fill(0).map((i, index) => {
@@ -29,14 +28,14 @@ const autotrophes = new Array(300).fill(0).map((i, index) => {
     initPosition: new GridPosition({
       // x: 2, y: 2,
       x: Math.round(Random.rangeFloor(0, grid.width)),
-      y: Math.round(Random.rangeFloor(0, grid.height))
+      y: Math.round(Random.rangeFloor(0, grid.height)),
     }),
     grid,
-    movementStyle: 
-    // [ Direction.down, Direction.left, Direction.left,],
-    new Array(Random.rangeFloor(4, 6))
-      .fill(0)
-      .map(() => Random.rangeFloor(0, 3))
+    colour: colourRange.autotrophe,
+    movementStyle:
+      new Array(Random.rangeFloor(4, 6))
+        .fill(0)
+        .map(() => Random.rangeFloor(0, 3)),
   })
   return org
 })
@@ -52,22 +51,23 @@ const app = new PIXI.Application({
   resolution: window.devicePixelRatio || 1,
 })
 
-// for (let h = 1; h < grid.height; h++) {
-//   for (let w = 1; w < grid.width; w++) {
-//     const dot = new PIXI.Graphics()
-//     dot.beginFill(colourRange.lightBg)
-//     dot.drawCircle(0, 0, 2)
-//     dot.endFill()
-//     dot.x = w * baseSize
-//     dot.y = h * baseSize
-//     app.stage.addChild(dot)
-//   }
-// }
+if (showGrid) {
+  for (let h = 1; h < grid.height; h++) {
+    for (let w = 1; w < grid.width; w++) {
+      const dot = new PIXI.Graphics()
+      dot.beginFill(colourRange.lightBg)
+      dot.drawCircle(0, 0, 2)
+      dot.endFill()
+      dot.x = w * baseSize
+      dot.y = h * baseSize
+      app.stage.addChild(dot)
+    }
+  }
+}
 
-// organismTexture = PIXI.Texture.from('assets/bulb.svg')
 for (const org of autotrophes) {
   org.spriteRef = new PIXI.Graphics()
-  org.spriteRef.beginFill(colourRange.autotrophe)
+  org.spriteRef.beginFill(org.colour)
   org.spriteRef.drawCircle(0, 0, 0.5 * baseSize)
   org.spriteRef.endFill()
   org.spriteRef.x = org.nextPosition.x * baseSize
@@ -85,7 +85,6 @@ if (!app.ticker.started) {
 
 let ticksTracker = 0
 app.ticker.add(() => {
-  // console.log(app.ticker.lastTime, app.ticker.deltaMS);
   if (ticksTracker === ticksInSingleStep) {
     ticksTracker = 0
   } else {
