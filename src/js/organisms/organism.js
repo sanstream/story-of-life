@@ -1,5 +1,6 @@
 import GridPosition from '../gridPosition'
 import Random from 'canvas-sketch-util/random'
+import { shiftHue } from '../helpers/colours'
 
 export const Direction = {
   up: 0,
@@ -8,18 +9,50 @@ export const Direction = {
   left: 3,
 }
 
+export function giveBirth (parents) {
+  const childBearingEnergyLevel = 9
+  if (parents[0].energy > childBearingEnergyLevel &&
+    parents[1].energy > childBearingEnergyLevel) {
+    const { grid, id, colour, type, } = parents[0]
+    const { movementStyle, } = parents[1]
+    const initPosition = parents[0].nextPosition
+    const chars = 'qwerttyuiopasdfghjklzxcvbnm'
+    const positionTochange = Random.rangeFloor(0, movementStyle.length - 1)
+    movementStyle[positionTochange] = Random.rangeFloor(0, 3)
+
+    parents[0].lifespan -= 1
+    parents[0].updateEnergy(-5)
+    parents[1].lifespan -= 1
+    parents[1].updateEnergy(-5)
+
+    const baby = new Organism({
+      initPosition,
+      type,
+      grid,
+      movementStyle,
+      id: id + chars[Random.rangeFloor(0, chars.length - 1)],
+      colour, // colour: shiftHue(colour),
+    })
+    baby.flipMovementStyle()
+    return baby
+  }
+  return null
+}
+
 export default class Organism {
   /**
    *
    * @param {GridPosition} initPosition
    */
-  constructor ({ initPosition, grid, movementStyle, id, colour, }) {
+  constructor ({ initPosition, type, grid, movementStyle, id, colour, }) {
     this.id = id
     this.hash = 'organism'
     this.grid = grid
     this.colour = colour
+    this.type = type
     // in iterations:
-    this.lifespan = 10000
+    this.lifespan = Random.rangeFloor(3, 40)
+    this.energy = 1
     /**
      * how many coordinates can it move per iteration:
      */
@@ -40,6 +73,17 @@ export default class Organism {
     this.moving = false
   }
 
+  updateEnergy (amount) {
+    if (this.energy + amount < 0) {
+      this.energy = 0
+      this.lifespan = 0
+    } else if (this.energy + amount > 10) {
+      this.energy = 10
+    } else {
+      this.energy += amount
+    }
+  }
+
   move () {
     if (this.lifespan && this.movementStyle.length) {
       this.previousPosition = new GridPosition({
@@ -55,6 +99,7 @@ export default class Organism {
       }
     }
     this.lifespan -= 1
+    this.updateEnergy(1)
   }
 
   applyPosition (direction, position, grid) {
@@ -93,11 +138,11 @@ export default class Organism {
       }
     }
     if (changeDirection) {
-      this.__flipMovementStyle()
+      this.flipMovementStyle()
     }
   }
 
-  __flipMovementStyle () {
+  flipMovementStyle () {
     this.movementStyle = this.movementStyle.map(dir => {
       if (dir === Direction.left) return Direction.right
       if (dir === Direction.right) return Direction.left
@@ -112,14 +157,5 @@ export default class Organism {
    */
   feed (lifespan) {
     this.lifespan = this.lifespan + lifespan
-  }
-
-  // by cloning itself
-  giveBirth () {
-    const chars = 'qwerttyuiopasdfghjklzxcvbnm'
-    const child = Object.assign({}, this)
-    child.hash = child.hash + chars[Random.rangeFloor(0, chars.length - 1)]
-    child.nextPosition.x += 1
-    return child
   }
 }
