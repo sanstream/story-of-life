@@ -26,6 +26,12 @@ function resetAllPositions () {
   })
 }
 
+function drawShapeFor (organism) {
+  organism.spriteRef.beginFill(organism.colour)
+  organism.spriteRef.drawCircle(0, 0, organism.energy * 0.03 * baseSize)
+  organism.spriteRef.endFill()
+}
+
 const showGrid = false
 
 const colourRange = {
@@ -132,6 +138,7 @@ for (const type in organisms) {
 
 app.ticker.minFPS = ticksInSingleStep
 app.ticker.maxFPS = ticksInSingleStep
+app.ticker.speed = 100
 app.ticker.stop()
 
 if (!app.ticker.started) {
@@ -140,6 +147,7 @@ if (!app.ticker.started) {
 
 let ticksTracker = 0
 app.ticker.add(() => {
+  resetAllPositions()
   if (ticksTracker === ticksInSingleStep) {
     ticksTracker = 0
   } else {
@@ -152,7 +160,26 @@ app.ticker.add(() => {
     for (const org of organisms[type]) {
       // for (const org of autotrophes) {
       if (ticksTracker === 0) {
+        if (!org.spriteRef) {
+          org.spriteRef = new PIXI.Graphics()
+          org.spriteRef.beginFill(org.colour)
+          org.spriteRef.drawCircle(0, 0, org.energy * 0.03 * baseSize)
+          org.spriteRef.endFill()
+          org.spriteRef.x = org.nextPosition.x * baseSize
+          org.spriteRef.y = org.nextPosition.y * baseSize
+          app.stage.addChild(org.spriteRef)
+        } else {
+          org.spriteRef.beginFill(org.colour)
+          org.spriteRef.drawCircle(0, 0, org.energy * 0.03 * baseSize)
+          org.spriteRef.endFill()
+        }
+        const { x, y, } = org.nextPosition // is current position!
+        allPositions.get(x).get(y).push(org)
         org.move()
+        if (org.lifespan === 0) {
+          app.stage.removeChild(org.spriteRef)
+          continue
+        }
       }
       if (org.previousPosition) {
         org.spriteRef.x = (org.previousPosition.x + ((org.nextPosition.x - org.previousPosition.x) * ticksDiff)) * baseSize
@@ -160,4 +187,22 @@ app.ticker.add(() => {
       }
     }
   }
+
+  allPositions.forEach((yPositions, x) => {
+    yPositions.forEach((organismsInOneSpot, y) => {
+      if (organismsInOneSpot.length > 1) {
+        if (organismsInOneSpot.length === 2) {
+          // console.log(organismsInOneSpot)
+          if (organismsInOneSpot[0].type === organismsInOneSpot[1].type) {
+            console.log(organismsInOneSpot[0].type, organismsInOneSpot[1].type)
+            const child = giveBirth(organismsInOneSpot)
+            if (child) {
+              console.log(child.colour)
+              organisms[child.type].push(child)
+            }
+          }
+        }
+      }
+    })
+  })
 })
