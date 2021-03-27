@@ -1,6 +1,5 @@
 import GridPosition from '../gridPosition'
 import Random from 'canvas-sketch-util/random'
-import { shiftHue } from '../helpers/colours'
 
 export const Direction = {
   up: 0,

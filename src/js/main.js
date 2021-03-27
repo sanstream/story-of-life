@@ -3,11 +3,14 @@ import Random from 'canvas-sketch-util/random'
 import GridPosition from './gridPosition'
 import Autotrophe, { giveBirth } from './organisms/organism'
 
-const nStartingOrganisms = 2000
+const nStartingOrganisms = 200
 const grid = {
   width: Math.round(Math.sqrt(nStartingOrganisms) * 0.9),
   height: Math.round(Math.sqrt(nStartingOrganisms) * 0.9),
 }
+
+const baseSize = 30
+const ticksInSingleStep = 10 // frames per second
 
 const allPositions = new Map()
 
@@ -26,14 +29,6 @@ function resetAllPositions () {
   })
 }
 
-function drawShapeFor (organism) {
-  organism.spriteRef.beginFill(organism.colour)
-  organism.spriteRef.drawCircle(0, 0, organism.energy * 0.03 * baseSize)
-  organism.spriteRef.endFill()
-}
-
-const showGrid = false
-
 const colourRange = {
   bgMonotone: 0x121212, // dark grey
   bg: 0x2C575D, // dark cyan
@@ -43,13 +38,25 @@ const colourRange = {
   autotrophe: 0x006666, // soft green
 }
 
+const timesSmallerThanBaseSize = 0.5
+const baseRadius = baseSize * 0.5 * timesSmallerThanBaseSize
+const baseStrokeWidth = baseSize * 0.1 * timesSmallerThanBaseSize
+
+function drawShapeFor (organism) {
+  organism.spriteRef.lineStyle(baseStrokeWidth, colourRange.bgMonotone)
+  organism.spriteRef.beginFill(organism.colour)
+  organism.spriteRef.drawCircle(0, 0, baseRadius)
+  // const growthRate = organism.energy < 9 ? organism.energy / 9 : 1
+  // organism.spriteRef.scale.set(growthRate)
+  organism.spriteRef.endFill()
+}
+
+const showGrid = false
+
 function randomMovements (minLength, maxLength) {
   const movements = new Array(Random.rangeFloor(minLength, maxLength)).fill(0)
   return movements.map(() => Random.rangeFloor(0, 3))
 }
-
-const baseSize = 30
-const ticksInSingleStep = 120 // frames per second
 
 const predefinedMovements = new Array(Math.round(nStartingOrganisms / 2))
   .fill(0).map(() => randomMovements(4, 8))
@@ -92,7 +99,7 @@ for (const type of ordering) {
           y: Math.round(Random.rangeFloor(0, grid.height)),
         }),
         grid,
-        colour: colourRange[type],
+        colour: (index === 0) ? 0xFF00FF : colourRange[type],
         movementStyle: type === 'autotrophe' ? [] : predefinedMovements[Random.rangeFloor(0, predefinedMovements.length - 1)],
       })
       return org
@@ -127,9 +134,7 @@ if (showGrid) {
 for (const type in organisms) {
   for (const org of organisms[type]) {
     org.spriteRef = new PIXI.Graphics()
-    org.spriteRef.beginFill(org.colour)
-    org.spriteRef.drawCircle(0, 0, org.energy * 0.03 * baseSize)
-    org.spriteRef.endFill()
+    drawShapeFor(org)
     org.spriteRef.x = org.nextPosition.x * baseSize
     org.spriteRef.y = org.nextPosition.y * baseSize
     app.stage.addChild(org.spriteRef)
@@ -162,17 +167,15 @@ app.ticker.add(() => {
       if (ticksTracker === 0) {
         if (!org.spriteRef) {
           org.spriteRef = new PIXI.Graphics()
-          org.spriteRef.beginFill(org.colour)
-          org.spriteRef.drawCircle(0, 0, org.energy * 0.03 * baseSize)
-          org.spriteRef.endFill()
+          drawShapeFor(org)
           org.spriteRef.x = org.nextPosition.x * baseSize
           org.spriteRef.y = org.nextPosition.y * baseSize
           app.stage.addChild(org.spriteRef)
-        } else {
-          org.spriteRef.beginFill(org.colour)
-          org.spriteRef.drawCircle(0, 0, org.energy * 0.03 * baseSize)
-          org.spriteRef.endFill()
         }
+        // else {
+        //   const growthRate = org.energy < 9 ? org.energy / 9 : 1
+        //   org.spriteRef.scale.set(growthRate)
+        // }
         const { x, y, } = org.nextPosition // is current position!
         allPositions.get(x).get(y).push(org)
         org.move()
@@ -193,11 +196,11 @@ app.ticker.add(() => {
       if (organismsInOneSpot.length > 1) {
         if (organismsInOneSpot.length === 2) {
           // console.log(organismsInOneSpot)
-          if (organismsInOneSpot[0].type === organismsInOneSpot[1].type) {
-            console.log(organismsInOneSpot[0].type, organismsInOneSpot[1].type)
+          if (organismsInOneSpot[0].type === organismsInOneSpot[1].type && organismsInOneSpot[0].type !== organismType.autotrophe) {
+            // console.log(organismsInOneSpot[0].type, organismsInOneSpot[1].type)
             const child = giveBirth(organismsInOneSpot)
             if (child) {
-              console.log(child.colour)
+              // console.log(child.type, child.movementStyle)
               organisms[child.type].push(child)
             }
           }
