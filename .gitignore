@@ -3,3 +3,5 @@ package-lock.json
 yarn.lock
 /tmp
 *.code-workspace
+/ts-build
+/dist

@@ -1,18 +1,42 @@
 import GridPosition from '../gridPosition'
+// @ts-ignore
 import Random from 'canvas-sketch-util/random'
 
-export const Direction = {
-  up: 0,
-  right: 1,
-  down: 2,
-  left: 3,
+export enum Direction {
+  up = 0,
+  right = 1,
+  down = 2,
+  left = 3,
 }
 
-export function giveBirth (parents) {
+function getOppositeDirection (direction: Direction): Direction {
+  switch(direction) {
+    case Direction.up:
+      return Direction.down
+    case Direction.down:
+      return Direction.up
+    case Direction.left:
+        return Direction.right
+    case Direction.right:
+      return Direction.left
+    default:
+    return direction
+  }
+}
+
+type OrganismParams = {
+  initPosition: GridPosition
+  type: string
+  movementStyle: Array<Direction>
+  id: string
+  colour: number
+}
+
+export function giveBirth (parents: Array<Organism>) {
   const childBearingEnergyLevel = 9
   if (parents[0].energy > childBearingEnergyLevel &&
     parents[1].energy > childBearingEnergyLevel) {
-    const { grid, id, colour, type, } = parents[0]
+    const { id, colour, type, } = parents[0]
     const { movementStyle, } = parents[1]
     const initPosition = parents[0].nextPosition
     const chars = 'qwerttyuiopasdfghjklzxcvbnm'
@@ -27,26 +51,48 @@ export function giveBirth (parents) {
     const baby = new Organism({
       initPosition,
       type,
-      grid,
       movementStyle,
       id: id + chars[Random.rangeFloor(0, chars.length - 1)],
       colour, // colour: shiftHue(colour),
     })
     baby.flipMovementStyle()
+    if (baby.movementStyle.length > 2) {
+      baby.movementStyle[1] = getOppositeDirection(baby.movementStyle[1])
+    }
     return baby
   }
   return null
 }
 
 export default class Organism {
+  id: string;
+  hash: 'organism';
+  colour: number;
+  type: string;
+  // in iterations:
+  lifespan: number;
+  energy: number;
   /**
-   *
-   * @param {GridPosition} initPosition
+   * how many coordinates can it move per iteration:
    */
-  constructor ({ initPosition, type, grid, movementStyle, id, colour, }) {
-    this.id = id
+  movementSpeed: number
+  step: number
+  spriteRef: any
+
+  /**
+   * ordered array of route coordinates
+   * in the form of GridPosition's
+   * serves as a type of memory:
+   */
+  routeTravelled: Array<any>
+  movementStyle: Array<Direction>
+  nextPosition: GridPosition
+  previousPosition?: GridPosition
+  moving: boolean
+
+  constructor ({ initPosition, type, movementStyle, id, colour, } :OrganismParams) {
+    this.id = id || ''
     this.hash = 'organism'
-    this.grid = grid
     this.colour = colour
     this.type = type
     // in iterations:
@@ -72,7 +118,7 @@ export default class Organism {
     this.moving = false
   }
 
-  updateEnergy (amount) {
+  updateEnergy (amount: number) {
     if (this.energy + amount < 0) {
       this.energy = 0
       this.lifespan = 0
@@ -83,12 +129,12 @@ export default class Organism {
     }
   }
 
-  move () {
+  move (grid: any) {
     if (this.lifespan && this.movementStyle.length) {
       this.previousPosition = new GridPosition({
         ...this.nextPosition,
       })
-      this.applyPosition(this.movementStyle[this.step], this.nextPosition, this.grid)
+      this.applyPosition(this.movementStyle[this.step], this.nextPosition, grid)
       this.moving = false
 
       if (this.movementStyle.length - 1 === this.step) {
@@ -101,7 +147,7 @@ export default class Organism {
     this.updateEnergy(1)
   }
 
-  applyPosition (direction, position, grid) {
+  applyPosition (direction: Direction, position: GridPosition, grid:any) {
     const maxY = grid.height
     const maxX = grid.width
     const bounceOFf = 2
@@ -129,6 +175,7 @@ export default class Organism {
         position.y += 1
       }
     } else if (direction === Direction.left) {
+// eslint-disable-next-line import/extensions
       if (position.x === 0) {
         position.x += bounceOFf
         changeDirection = true
@@ -142,19 +189,13 @@ export default class Organism {
   }
 
   flipMovementStyle () {
-    this.movementStyle = this.movementStyle.map(dir => {
-      if (dir === Direction.left) return Direction.right
-      if (dir === Direction.right) return Direction.left
-      if (dir === Direction.down) return Direction.up
-      if (dir === Direction.up) return Direction.down
-    }).reverse()
+    this.movementStyle = this.movementStyle.map(getOppositeDirection)
   }
 
   /**
    * lifespan in number of steps.
-   * @param {Number} lifespan
    */
-  feed (lifespan) {
+  feed (lifespan: number) {
     this.lifespan = this.lifespan + lifespan
   }
 }

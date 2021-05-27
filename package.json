@@ -9,11 +9,12 @@
   ],
   "author": "sanstream",
   "scripts": {
-    "dev": "cross-env NODE_ENV=development webpack-dev-server --config webpack.dev.js",
+    "dev": "cross-env NODE_ENV=development  webpack-dev-server --config webpack.dev.js",
     "clean": "rimraf dist",
     "lint": "eslint ./",
     "test:ui": "cypress open",
     "prepare": "install-peers",
+    "ts-build": "./node_modules/typescript/bin/tsc",
     "build": "cross-env NODE_ENV=production webpack --config webpack.prod.js"
   },
   "dependencies": {
@@ -22,10 +23,10 @@
     "canvas-sketch-util": "^1.10.0",
     "core-js": "^3.6.4",
     "eslint": "^7.18.0",
-    "pixi.js": "^5.2.1"
+    "pixi.js": "^5.2.1",
+    "typescript": "^4.2.3"
   },
   "devDependencies": {
-    "cypress": "^6.3.0",
     "@babel/core": "^7.8.4",
     "@babel/plugin-transform-runtime": "^7.8.3",
     "@babel/preset-env": "^7.8.4",
@@ -34,6 +35,7 @@
     "clean-webpack-plugin": "^3.0.0",
     "copy-webpack-plugin": "^5.1.1",
     "cross-env": "^7.0.2",
+    "cypress": "^6.3.0",
     "eslint-config-standard": "^16.0.2",
     "eslint-plugin-import": "^2.22.1",
     "eslint-plugin-node": "^11.1.0",
@@ -43,6 +45,7 @@
     "imagemin-webpack-plugin": "^2.4.2",
     "install-peers-cli": "^2.2.0",
     "rimraf": "^3.0.2",
+    "ts-loader": "^8.0.18",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.10",
     "webpack-dev-server": "^3.10.3",

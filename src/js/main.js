@@ -1,9 +1,10 @@
 import * as PIXI from 'pixi.js'
 import Random from 'canvas-sketch-util/random'
 import GridPosition from './gridPosition'
-import Autotrophe, { giveBirth } from './organisms/organism'
+// eslint-disable-next-line import/extensions
+import Organism, { giveBirth } from './organisms/organism'
 
-const nStartingOrganisms = 200
+const nStartingOrganisms = 10
 const grid = {
   width: Math.round(Math.sqrt(nStartingOrganisms) * 0.9),
   height: Math.round(Math.sqrt(nStartingOrganisms) * 0.9),
@@ -91,7 +92,7 @@ for (const type of ordering) {
   organisms[type] = new Array(organismTypeCounts[type].count)
     .fill(0)
     .map((_, index) => {
-      const org = new Autotrophe({
+      const org = new Organism({
         id: `${type}-${index}`,
         type,
         initPosition: new GridPosition({
@@ -171,17 +172,19 @@ app.ticker.add(() => {
           org.spriteRef.x = org.nextPosition.x * baseSize
           org.spriteRef.y = org.nextPosition.y * baseSize
           app.stage.addChild(org.spriteRef)
-        }
-        // else {
-        //   const growthRate = org.energy < 9 ? org.energy / 9 : 1
-        //   org.spriteRef.scale.set(growthRate)
-        // }
-        const { x, y, } = org.nextPosition // is current position!
-        allPositions.get(x).get(y).push(org)
-        org.move()
-        if (org.lifespan === 0) {
-          app.stage.removeChild(org.spriteRef)
-          continue
+        } else {
+          const growthRate = org.energy < 9 ? org.energy / 9 : 1
+          org.spriteRef.scale.set(growthRate)
+          if (org.lifespan < 5) {
+            org.spriteRef.alpha = org.lifespan / 5
+          }
+          const { x, y, } = org.nextPosition // is current position!
+          allPositions.get(x).get(y).push(org)
+          org.move(grid)
+          if (org.lifespan === 0) {
+            app.stage.removeChild(org.spriteRef)
+            continue
+          }
         }
       }
       if (org.previousPosition) {
